@@ -1,0 +1,124 @@
+// const debug = process.env.REACT_APP_DEBUG;
+
+// use to emulate API calls using localstorage
+const ENABLE_EMULATION = false;
+
+const emulateAPI = ENABLE_EMULATION;
+
+const LOCAL_KEY = "__SPARK__PHYSICS__COURSE_DATA__";
+
+const asyncResponse = (response) => {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(response), 1000);
+  });
+};
+
+const getLocalCourseData = (id) => {
+  const currentData = JSON.parse(localStorage.getItem(LOCAL_KEY));
+  if (!currentData) return null;
+  return currentData[id] || null;
+};
+
+const setLocalCourseData = (id, data) => {
+  const currentData = JSON.parse(localStorage.getItem(LOCAL_KEY));
+  localStorage.setItem(
+    LOCAL_KEY,
+    JSON.stringify(
+      currentData
+        ? {
+            ...currentData,
+            [id]: data,
+          }
+        : { [id]: data }
+    )
+  );
+  return true;
+};
+
+const urlParams = window.location.search
+  .slice(1)
+  .split("&")
+  .reduce((urlParams, str) => {
+    const [key, value] = str.split("=");
+    urlParams[key] = value;
+    return urlParams;
+  }, {});
+
+export const getUrlParams = () => urlParams;
+
+const emulateSpark = {
+  // getters
+  courseName: () => {
+    return asyncResponse(urlParams.courseName || "Emulated course name");
+  },
+  userID: () => {
+    return asyncResponse(urlParams.userID || "1");
+  },
+  userName: () => {
+    return asyncResponse(urlParams.userName || "John");
+  },
+  currentSession: () => {
+    return asyncResponse(urlParams.currentSession ? parseInt(urlParams.currentSession, 10) : 1);
+  },
+  getCourseData: (userId) => {
+    return asyncResponse(getLocalCourseData(userId));
+  },
+  getCurrentMode: () => {
+    return asyncResponse(urlParams.getCurrentMode || "pd");
+  },
+  isProjectLocked: () => {
+    return asyncResponse(urlParams.isProjectLocked === "1" || false);
+  },
+  isPaused: () => {
+    return asyncResponse(urlParams.isPaused === "1" || false);
+  },
+  isAssessmentReleased: () => {
+    return asyncResponse(true);
+  },
+  getAllSessionTypes: () => {
+    return asyncResponse({ 1: "student", 2: "student", 3: "student", 4: "student", 5: "student" });
+  },
+  getDistrictName: () => {
+    return asyncResponse("District1");
+  },
+  getSubject: () => {
+    return asyncResponse("Subject1");
+  },
+  getTeacherID: () => {
+    return asyncResponse("Teacher1");
+  },
+
+  // setters
+  setCurrentLocation: () => {
+    return asyncResponse(true);
+  },
+  setCourseData: (userId, data) => {
+    return asyncResponse(setLocalCourseData(userId, data));
+  },
+  mileStoneCompleted: () => {
+    return asyncResponse(true);
+  },
+  showAssessment: () => {
+    return asyncResponse(true);
+  },
+  publishProject: () => {
+    return asyncResponse(true);
+  },
+  BackToClass: () => {
+    return asyncResponse(true);
+  },
+  submitProjectGrade: () => {
+    return asyncResponse(true);
+  },
+  submitProjectAnswer: () => {
+    return asyncResponse(true);
+  },
+  trackEvent: (event, metadata) => {
+    console.log(`Track event -> ${event}`, metadata);
+    return asyncResponse(true);
+  },
+};
+
+const parentSpark = window.parent ? window.parent.Spark : null;
+
+export const Spark = emulateAPI ? emulateSpark : parentSpark;
